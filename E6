@@ -1,0 +1,149 @@
+<#En consola de comandos ingresar lo siguente
+  $moduloPath = "C:\Program Files\WindowsPowerShell\Modules\AuditoriaBasica" 
+
+  New-Item -Path $moduloPath -ItemType Directory 
+
+  Set-Location $moduloPath #>
+
+
+#En Powershell ISE, crea el script "AuditoriaBasica.psm1"
+
+
+function Obtener-UsuariosInactivos { 
+
+<# 
+
+.SYNOPSIS 
+
+Obtiene usuarios locales habilitados que nunca han iniciado sesión. 
+
+ 
+
+.DESCRIPTION 
+
+Esta función busca cuentas locales habilitadas que no tienen fecha de último inicio de sesión. 
+
+ 
+
+.EXAMPLE 
+
+Obtener-UsuariosInactivos 
+
+ 
+
+.NOTES 
+
+Puede ayudar a detectar cuentas innecesarias o riesgosas en auditorías básicas. 
+
+#> 
+
+    Get-LocalUser | Where-Object { $_.Enabled -eq $true -and -not $_.LastLogon } 
+
+} 
+
+
+
+function Obtener-ServiciosExternos { 
+
+<# 
+
+.SYNOPSIS 
+
+Obtiene servicios en ejecución que no pertenecen explícitamente a Windows. 
+
+ 
+
+.DESCRIPTION 
+
+Filtra servicios activos cuyo nombre descriptivo no contiene el término "Windows". 
+
+ 
+
+.EXAMPLE 
+
+Obtener-ServiciosExternos 
+
+ 
+
+.NOTES 
+
+Útil para detectar software de terceros corriendo en segundo plano. 
+
+#> 
+
+    Get-Service | Where-Object { $_.Status -eq "Running" -and $_.DisplayName -notmatch "Windows" } 
+
+
+
+}
+
+
+
+#En Powershell ISE, crea el script "AuditoriaBasica.psd1"
+
+
+New-ModuleManifest -Path '.\AuditoriaBasica.psd1' ` 
+
+    -RootModule 'AuditoriaBasica.psm1' ` 
+
+    -ModuleVersion '1.0.0' ` 
+
+    -Author 'Equipo de Ciberseguridad' ` 
+
+    -Description 'Módulo para auditoría básica de usuarios y servicios' ` 
+
+    -PowerShellVersion '5.1' 
+
+
+
+#Crea el script principal "Principal.ps1" (O realmente el nombre que desees)
+
+Clear-Host 
+
+Import-Module AuditoriaBasica 
+
+ 
+
+Write-Host "=== Auditoría básica de usuarios y servicios ===" 
+
+Write-Host "1. Mostrar usuarios inactivos" 
+
+Write-Host "2. Mostrar servicios externos activos" 
+
+$opcion = Read-Host "Selecciona una opción (1 o 2)" 
+
+ 
+
+switch ($opcion) { 
+
+    "1" { 
+
+        $usuarios = Obtener-UsuariosInactivos 
+
+        $usuarios | Format-Table Name, Enabled, LastLogon -AutoSize 
+
+        $usuarios | Export-Csv -Path "$env:USERPROFILE\Desktop\users_inac.csv" -NoTypeInformation 
+
+        Write-Host "`n📄 Reporte generado: ussers_inac.csv" 
+
+    } 
+
+    "2" { 
+
+        $servicios = Obtener-ServiciosExternos 
+
+        $servicios | Format-Table DisplayName, Status, StartType -AutoSize 
+
+        $servicios | ConvertTo-Html | Out-File "$env:USERPROFILE\Desktop\serv_e.html" 
+
+        Write-Host "`n📄 Reporte generado: serv_e.html" 
+
+    } 
+
+    default { 
+
+        Write-Host "Opción no válida." 
+
+    } 
+
+} 
