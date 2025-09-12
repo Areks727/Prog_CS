@@ -1,0 +1,4 @@
+Título,Dominio,Fecha de Brecha,Datos Comprometidos,Verificada,Sensible
+GameSprite,gamesprite.me,2019-12-17,"Email addresses, IP addresses, Passwords, Usernames",Sí,No
+Naz.API,,2023-09-20,"Email addresses, Passwords",Sí,No
+SwordFantasy,swordfantasy.com,2017-01-20,"Email addresses, IP addresses, Passwords, Usernames",Sí,No
